@@ -6,8 +6,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { getStory } from "@/lib/story.functions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowRight, Loader2, Printer, Sparkles, CheckCircle2, XCircle, BookMarked } from "lucide-react";
+import { ArrowRight, Loader2, Printer, Sparkles, CheckCircle2, XCircle, BookMarked, Palette } from "lucide-react";
 import { ClickableText } from "@/components/ClickableText";
+import { generateColoringPage } from "@/lib/story.functions";
+import { toast } from "sonner";
 
 type Question = {
   type: "mcq" | "true_false" | "fill_blank";

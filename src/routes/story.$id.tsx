@@ -24,6 +24,7 @@ function StoryPage() {
   const { id } = Route.useParams();
   const nav = useNavigate();
   const getFn = useServerFn(getStory);
+  const isValidStoryId = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [submitted, setSubmitted] = useState(false);
@@ -38,10 +39,24 @@ function StoryPage() {
   const story = useQuery({
     queryKey: ["story", id],
     queryFn: () => getFn({ data: { id } }),
-    enabled: !!authed,
+    enabled: !!authed && isValidStoryId,
   });
 
-  if (!authed || story.isLoading) {
+  if (!authed) {
+    return <div className="min-h-screen grid place-items-center"><Loader2 className="size-8 animate-spin text-primary" /></div>;
+  }
+  if (!isValidStoryId) {
+    return (
+      <main dir="rtl" className="min-h-screen grid place-items-center px-4">
+        <Card className="worksheet-frame max-w-md text-center space-y-4">
+          <h1 className="text-2xl font-bold">رابط القصة غير صحيح</h1>
+          <p className="text-muted-foreground">ارجع للصفحة الرئيسية وأنشئ قصة جديدة.</p>
+          <Button asChild><Link to="/">العودة للرئيسية</Link></Button>
+        </Card>
+      </main>
+    );
+  }
+  if (story.isLoading) {
     return <div className="min-h-screen grid place-items-center"><Loader2 className="size-8 animate-spin text-primary" /></div>;
   }
   if (story.error || !story.data) {

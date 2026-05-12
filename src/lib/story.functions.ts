@@ -17,7 +17,7 @@ const StorySchema = z.object({
   title: z.string(),
   story: z.string(),
   imagePrompt: z.string(),
-  questions: z.array(QuestionSchema).min(4).max(6),
+  questions: z.array(QuestionSchema).min(3).max(8),
 });
 
 const InputSchema = z.object({
@@ -45,15 +45,49 @@ export const generateStory = createServerFn({ method: "POST" })
     const langName = data.language === "ar" ? "Arabic" : "English";
     const system = `You are a children's story writer. Generate a short, age-appropriate, engaging story for kids about the requested topic, in ${langName}. Return strictly valid JSON matching the schema. Story length: ${sizeWords[data.size]}. Include 4 to 6 comprehension questions: mix of mcq (with an "options" array of 3 strings), true_false (no options), and fill_blank (no options). For mcq the correctAnswer must EXACTLY match one of the options. For true_false the correctAnswer must be "true" or "false" (or "صح"/"خطأ" in Arabic). For fill_blank the correctAnswer is the single missing word. Always include a short kid-friendly "explanation" for each question in the same language. The imagePrompt must be a vivid English description for an illustration of the main scene (no text, no words in the image).`;
 
-    const { experimental_output } = await generateText({
-      model,
-      system,
-      prompt: `Topic: ${data.topic}\nLanguage: ${langName}\nLength: ${data.size}\nGenerate the story now as JSON only.`,
-      experimental_output: Output.object({ schema: StorySchema }),
-      maxOutputTokens: 4096,
-    });
+    async function tryGenerate() {
+      const { experimental_output } = await generateText({
+        model,
+        system,
+        prompt: `Topic: ${data.topic}\nLanguage: ${langName}\nLength: ${data.size}\nReturn ONLY a single JSON object, no prose, no markdown.`,
+        experimental_output: Output.object({ schema: StorySchema }),
+        maxOutputTokens: 4096,
+      });
+      return experimental_output;
+    }
 
-    const story = experimental_output;
+    async function fallbackGenerate() {
+      // Plain text generation + manual JSON parse as a safety net
+      const { text } = await generateText({
+        model,
+        system: system + `\nReturn ONLY valid JSON, no markdown fences, no commentary.`,
+        prompt: `Topic: ${data.topic}\nLanguage: ${langName}\nLength: ${data.size}\nJSON shape: {"title":string,"story":string,"imagePrompt":string,"questions":[{"type":"mcq"|"true_false"|"fill_blank","question":string,"options"?:string[],"correctAnswer":string,"explanation":string}]}`,
+        maxOutputTokens: 4096,
+      });
+      const cleaned = text.replace(/```json\s*/gi, "").replace(/```/g, "").trim();
+      const start = cleaned.indexOf("{");
+      const end = cleaned.lastIndexOf("}");
+      if (start === -1 || end === -1) throw new Error("AI returned no JSON");
+      const parsed = JSON.parse(cleaned.slice(start, end + 1));
+      return StorySchema.parse(parsed);
+    }
+
+    let story: z.infer<typeof StorySchema>;
+    try {
+      story = await tryGenerate();
+    } catch (e) {
+      console.error("structured generation failed, retrying with fallback", e);
+      try {
+        story = await fallbackGenerate();
+      } catch (e2) {
+        console.error("fallback also failed", e2);
+        throw new Error(
+          data.language === "ar"
+            ? "تعذر إنشاء القصة، حاول مرة أخرى أو غيّر الموضوع"
+            : "Could not generate the story, please try again or change the topic"
+        );
+      }
+    }
 
     // Generate image via gateway (raw call)
     let imageUrl: string | null = null;

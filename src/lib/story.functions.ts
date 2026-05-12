@@ -43,7 +43,18 @@ export const generateStory = createServerFn({ method: "POST" })
     const model = gateway("google/gemini-2.5-flash");
 
     const langName = data.language === "ar" ? "Arabic" : "English";
-    const system = `You are a children's story writer. Generate a short, age-appropriate, engaging story for kids about the requested topic, in ${langName}. Return strictly valid JSON matching the schema. Story length: ${sizeWords[data.size]}. Include 4 to 6 comprehension questions: mix of mcq (with an "options" array of 3 strings), true_false (no options), and fill_blank (no options). For mcq the correctAnswer must EXACTLY match one of the options. For true_false the correctAnswer must be "true" or "false" (or "صح"/"خطأ" in Arabic). For fill_blank the correctAnswer is the single missing word. Always include a short kid-friendly "explanation" for each question in the same language. The imagePrompt must be a vivid English description for an illustration of the main scene (no text, no words in the image).`;
+
+    // Personalize with profile prefs (age + language level)
+    const { data: profile } = await context.supabase
+      .from("profiles")
+      .select("age, arabic_level, english_level")
+      .eq("user_id", context.userId)
+      .maybeSingle();
+    const age = profile?.age ?? 8;
+    const level = data.language === "ar" ? (profile?.arabic_level ?? "beginner") : (profile?.english_level ?? "beginner");
+    const levelHint = level === "beginner" ? "very simple vocabulary, short sentences" : level === "intermediate" ? "moderate vocabulary, varied sentence structure" : "rich vocabulary, descriptive language";
+
+    const system = `You are a children's story writer. Generate a short, engaging story for a ${age}-year-old child about the requested topic, in ${langName}. Use ${levelHint} appropriate for a ${level} ${langName} reader. Return strictly valid JSON matching the schema. Story length: ${sizeWords[data.size]}. Include 4 to 6 comprehension questions: mix of mcq (with an "options" array of 3 strings), true_false (no options), and fill_blank (no options). For mcq the correctAnswer must EXACTLY match one of the options. For true_false the correctAnswer must be "true" or "false" (or "صح"/"خطأ" in Arabic). For fill_blank the correctAnswer is the single missing word. Always include a short kid-friendly "explanation" for each question in the same language. The imagePrompt must be a vivid English description for an illustration of the main scene (no text, no words in the image).`;
 
     async function tryGenerate() {
       const { experimental_output } = await generateText({

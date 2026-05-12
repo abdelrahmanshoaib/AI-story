@@ -4,13 +4,14 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { generateStory, listStories, deleteStory } from "@/lib/story.functions";
+import { getProfile } from "@/lib/profile.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { BookOpen, Loader2, Sparkles, Trash2, LogOut, Wand2 } from "lucide-react";
+import { BookOpen, Loader2, Sparkles, Trash2, LogOut, Wand2, Settings as SettingsIcon, User } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: Home,
@@ -38,6 +39,7 @@ function Home() {
   const generateFn = useServerFn(generateStory);
   const listFn = useServerFn(listStories);
   const deleteFn = useServerFn(deleteStory);
+  const getProfileFn = useServerFn(getProfile);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -55,6 +57,20 @@ function Home() {
     queryFn: () => listFn(),
     enabled: !!authed,
   });
+
+  const profile = useQuery({
+    queryKey: ["profile"],
+    queryFn: () => getProfileFn(),
+    enabled: !!authed,
+  });
+
+  // Apply profile defaults once
+  useEffect(() => {
+    if (profile.data) {
+      if (profile.data.preferred_language) setLanguage(profile.data.preferred_language as "ar" | "en");
+      if (profile.data.preferred_size) setSize(profile.data.preferred_size as "small" | "medium" | "large");
+    }
+  }, [profile.data]);
 
   async function handleGenerate(e: React.FormEvent) {
     e.preventDefault();
@@ -86,23 +102,42 @@ function Home() {
     return <div className="min-h-screen grid place-items-center"><Loader2 className="size-8 animate-spin text-primary" /></div>;
   }
 
-  const topics = language === "ar" ? TOPICS_AR : TOPICS_EN;
+  const baseTopics = language === "ar" ? TOPICS_AR : TOPICS_EN;
+  const favTopics = profile.data?.favorite_topics ?? [];
+  const topics = Array.from(new Set([...favTopics, ...baseTopics]));
+  const displayName = profile.data?.display_name;
 
   return (
     <main dir="rtl" className="min-h-screen px-4 py-8 max-w-6xl mx-auto">
-      <header className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-3">
-          <div className="size-12 rounded-2xl bg-primary grid place-items-center shadow-md rotate-[-4deg]">
+      <header className="flex items-center justify-between mb-8 gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="size-12 rounded-2xl bg-primary grid place-items-center shadow-md rotate-[-4deg] shrink-0">
             <BookOpen className="size-6 text-primary-foreground" />
           </div>
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold">مولّد قصص الأطفال</h1>
+          <div className="min-w-0">
+            <h1 className="text-xl md:text-3xl font-bold truncate">
+              {displayName ? `أهلاً ${displayName}` : "مولّد قصص الأطفال"}
+            </h1>
             <p className="text-xs text-muted-foreground">قصص بالذكاء الاصطناعي مع رسومات وأسئلة</p>
           </div>
         </div>
-        <Button variant="ghost" size="sm" onClick={handleSignOut}>
-          <LogOut className="size-4 ml-1" /> خروج
-        </Button>
+        <div className="flex items-center gap-2 shrink-0">
+          <Link to="/settings" className="flex items-center gap-2">
+            <div className="size-10 rounded-full overflow-hidden bg-muted border-2 border-primary/40 grid place-items-center hover:border-primary transition">
+              {profile.data?.avatar_url ? (
+                <img src={profile.data.avatar_url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <User className="size-5 text-muted-foreground" />
+              )}
+            </div>
+          </Link>
+          <Button asChild variant="ghost" size="sm">
+            <Link to="/settings"><SettingsIcon className="size-4 ml-1" /> الإعدادات</Link>
+          </Button>
+          <Button variant="ghost" size="sm" onClick={handleSignOut}>
+            <LogOut className="size-4 ml-1" /> خروج
+          </Button>
+        </div>
       </header>
 
       <div className="grid lg:grid-cols-[1.1fr_1fr] gap-6">

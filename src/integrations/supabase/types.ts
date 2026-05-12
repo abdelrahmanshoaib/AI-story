@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      profiles: {
+        Row: {
+          age: number | null
+          arabic_level: string | null
+          avatar_url: string | null
+          created_at: string
+          daily_goal: number | null
+          display_name: string | null
+          english_level: string | null
+          favorite_topics: string[] | null
+          id: string
+          monthly_goal: number | null
+          preferred_language: string | null
+          preferred_size: string | null
+          updated_at: string
+          user_id: string
+          weekly_goal: number | null
+        }
+        Insert: {
+          age?: number | null
+          arabic_level?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          daily_goal?: number | null
+          display_name?: string | null
+          english_level?: string | null
+          favorite_topics?: string[] | null
+          id?: string
+          monthly_goal?: number | null
+          preferred_language?: string | null
+          preferred_size?: string | null
+          updated_at?: string
+          user_id: string
+          weekly_goal?: number | null
+        }
+        Update: {
+          age?: number | null
+          arabic_level?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          daily_goal?: number | null
+          display_name?: string | null
+          english_level?: string | null
+          favorite_topics?: string[] | null
+          id?: string
+          monthly_goal?: number | null
+          preferred_language?: string | null
+          preferred_size?: string | null
+          updated_at?: string
+          user_id?: string
+          weekly_goal?: number | null
+        }
+        Relationships: []
+      }
       stories: {
         Row: {
           created_at: string

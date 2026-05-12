@@ -38,8 +38,15 @@ function StoryPage() {
 
   const story = useQuery({
     queryKey: ["story", id],
-    queryFn: () => getFn({ data: { id } }),
+    queryFn: async () => {
+      try {
+        return await getFn({ data: { id } });
+      } catch {
+        return null;
+      }
+    },
     enabled: !!authed && isValidStoryId,
+    retry: false,
   });
 
   if (!authed) {

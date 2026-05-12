@@ -17,7 +17,7 @@ const StorySchema = z.object({
   title: z.string(),
   story: z.string(),
   imagePrompt: z.string(),
-  questions: z.array(QuestionSchema).min(4).max(6),
+  questions: z.array(QuestionSchema).min(3).max(8),
 });
 
 const InputSchema = z.object({

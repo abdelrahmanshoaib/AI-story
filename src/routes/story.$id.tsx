@@ -137,6 +137,10 @@ img{max-width:100%;max-height:240mm;object-fit:contain;filter:grayscale(1) contr
           <Button variant="ghost" asChild>
             <Link to="/vocabulary"><BookMarked className="size-4 ml-1" /> {isAr ? "كلماتي" : "Vocabulary"}</Link>
           </Button>
+          <Button variant="outline" onClick={handleColoring} disabled={coloringLoading}>
+            {coloringLoading ? <Loader2 className="size-4 ml-1 animate-spin" /> : <Palette className="size-4 ml-1" />}
+            {isAr ? "صفحة تلوين A4" : "Coloring A4"}
+          </Button>
           <Button variant="outline" onClick={() => window.print()}>
             <Printer className="size-4 ml-1" /> {isAr ? "طباعة / PDF" : "Print / PDF"}
           </Button>

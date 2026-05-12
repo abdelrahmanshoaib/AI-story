@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowRight, Loader2, Plus, Trash2, Volume2, BookMarked } from "lucide-react";
+import { ArrowRight, Loader2, Plus, Trash2, Volume2, BookMarked, GraduationCap } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/vocabulary")({
@@ -100,13 +100,16 @@ function VocabPage() {
 
   return (
     <main dir="rtl" className="min-h-screen px-4 py-8 max-w-4xl mx-auto">
-      <header className="flex items-center justify-between mb-6">
+      <header className="flex items-center justify-between mb-6 gap-2 flex-wrap">
         <Link to="/" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
           <ArrowRight className="size-4" /> العودة
         </Link>
         <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
           <BookMarked className="size-6 text-primary" /> سجل الكلمات
         </h1>
+        <Button asChild className="bg-secondary hover:bg-secondary/90 text-secondary-foreground">
+          <Link to="/study"><GraduationCap className="size-4 ml-1" /> ابدأ المذاكرة</Link>
+        </Button>
       </header>
 
       <Card className="worksheet-frame mb-6">

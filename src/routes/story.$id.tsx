@@ -27,6 +27,39 @@ function StoryPage() {
   const { id } = Route.useParams();
   const nav = useNavigate();
   const getFn = useServerFn(getStory);
+  const coloringFn = useServerFn(generateColoringPage);
+  const [coloringLoading, setColoringLoading] = useState(false);
+
+  const handleColoring = async () => {
+    setColoringLoading(true);
+    try {
+      const res = await coloringFn({ data: { id } });
+      const w = window.open("", "_blank");
+      if (!w) { toast.error("الرجاء السماح بالنوافذ المنبثقة"); return; }
+      const isAr = true;
+      w.document.write(`<!doctype html><html dir="rtl"><head><meta charset="utf-8"><title>${res.title} — صفحة تلوين</title>
+<style>
+@page { size: A4; margin: 10mm; }
+html,body{margin:0;padding:0;background:#fff;font-family:system-ui,sans-serif;}
+.page{width:190mm;height:277mm;display:flex;flex-direction:column;align-items:center;justify-content:center;page-break-after:always;}
+h1{font-size:22pt;margin:0 0 6mm;text-align:center;color:#000;}
+img{max-width:100%;max-height:240mm;object-fit:contain;filter:grayscale(1) contrast(1.4);}
+.actions{position:fixed;top:8px;left:8px;display:flex;gap:8px;}
+.actions button{padding:8px 14px;border:1px solid #000;background:#fff;cursor:pointer;border-radius:6px;font-size:14px;}
+@media print{.actions{display:none;}}
+</style></head><body>
+<div class="actions"><button onclick="window.print()">طباعة</button><button onclick="window.close()">إغلاق</button></div>
+<div class="page"><h1>${res.title}</h1><img src="${res.dataUrl}" alt="coloring"/></div>
+<script>window.addEventListener('load',()=>setTimeout(()=>window.print(),400));</script>
+</body></html>`);
+      w.document.close();
+    } catch (e: any) {
+      toast.error(e?.message || "فشل توليد صفحة التلوين");
+    } finally {
+      setColoringLoading(false);
+    }
+  };
+
   const isValidStoryId = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [answers, setAnswers] = useState<Record<number, string>>({});

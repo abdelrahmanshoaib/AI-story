@@ -40,16 +40,17 @@ export const generateStory = createServerFn({ method: "POST" })
     if (!apiKey) throw new Error("LOVABLE_API_KEY missing");
 
     const gateway = createLovableAiGatewayProvider(apiKey);
-    const model = gateway("google/gemini-3-flash-preview");
+    const model = gateway("google/gemini-2.5-flash");
 
     const langName = data.language === "ar" ? "Arabic" : "English";
-    const system = `You are a children's story writer. Generate a short, age-appropriate, engaging story for kids about the requested topic, in ${langName}. Return strictly valid JSON matching the schema. Story length: ${sizeWords[data.size]}. Include 5 comprehension questions: mix of mcq (3 options each), true_false, and fill_blank. For mcq the correctAnswer must EXACTLY match one of the options. For true_false the correctAnswer must be "true" or "false" (or "صح"/"خطأ" in Arabic). For fill_blank the correctAnswer is the single missing word. Provide a short kid-friendly explanation for each answer in the same language. The imagePrompt should be a vivid English description for an illustration of the main scene (no text, no words in the image).`;
+    const system = `You are a children's story writer. Generate a short, age-appropriate, engaging story for kids about the requested topic, in ${langName}. Return strictly valid JSON matching the schema. Story length: ${sizeWords[data.size]}. Include 4 to 6 comprehension questions: mix of mcq (with an "options" array of 3 strings), true_false (no options), and fill_blank (no options). For mcq the correctAnswer must EXACTLY match one of the options. For true_false the correctAnswer must be "true" or "false" (or "صح"/"خطأ" in Arabic). For fill_blank the correctAnswer is the single missing word. Always include a short kid-friendly "explanation" for each question in the same language. The imagePrompt must be a vivid English description for an illustration of the main scene (no text, no words in the image).`;
 
     const { experimental_output } = await generateText({
       model,
       system,
-      prompt: `Topic: ${data.topic}\nLanguage: ${langName}\nLength: ${data.size}\nGenerate the story now.`,
+      prompt: `Topic: ${data.topic}\nLanguage: ${langName}\nLength: ${data.size}\nGenerate the story now as JSON only.`,
       experimental_output: Output.object({ schema: StorySchema }),
+      maxOutputTokens: 4096,
     });
 
     const story = experimental_output;

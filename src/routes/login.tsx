@@ -59,6 +59,19 @@ function LoginPage() {
     }
   }
 
+  async function handleGuest() {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInAnonymously();
+      if (error) throw error;
+      toast.success("مرحباً بك كضيف!");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "تعذر الدخول كضيف");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function handleGoogle() {
     try {
       const { lovable } = await import("@/integrations/lovable/index");

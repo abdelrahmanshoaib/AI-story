@@ -31,30 +31,51 @@ function StoryPage() {
   const [coloringLoading, setColoringLoading] = useState(false);
 
   const handleColoring = async () => {
+    // open the window SYNCHRONOUSLY to avoid popup blockers
+    const w = window.open("", "_blank");
+    if (!w) {
+      toast.error("الرجاء السماح بالنوافذ المنبثقة لهذا الموقع");
+      return;
+    }
+    w.document.write(`<!doctype html><html dir="rtl"><head><meta charset="utf-8"><title>صفحة تلوين</title>
+<style>html,body{margin:0;height:100%;display:grid;place-items:center;font-family:system-ui,sans-serif;background:#fff;color:#333;}
+.box{text-align:center;padding:24px;}
+.spin{width:48px;height:48px;border:4px solid #ddd;border-top-color:#7c3aed;border-radius:50%;animation:s 1s linear infinite;margin:0 auto 16px;}
+@keyframes s{to{transform:rotate(360deg)}}</style></head><body>
+<div class="box"><div class="spin"></div><p>جاري إنشاء صفحة التلوين... قد تستغرق دقيقة</p></div>
+</body></html>`);
+    w.document.close();
+
     setColoringLoading(true);
     try {
       const res = await coloringFn({ data: { id } });
-      const w = window.open("", "_blank");
-      if (!w) { toast.error("الرجاء السماح بالنوافذ المنبثقة"); return; }
-      const isAr = true;
-      w.document.write(`<!doctype html><html dir="rtl"><head><meta charset="utf-8"><title>${res.title} — صفحة تلوين</title>
+      if (w.closed) { toast.message("تم تجهيز الصفحة لكن النافذة أُغلقت"); return; }
+      const safeTitle = (res.title || "صفحة تلوين").replace(/[<>&"]/g, (c) => ({"<":"&lt;",">":"&gt;","&":"&amp;","\"":"&quot;"} as any)[c]);
+      w.document.open();
+      w.document.write(`<!doctype html><html dir="rtl"><head><meta charset="utf-8"><title>${safeTitle} — صفحة تلوين</title>
 <style>
 @page { size: A4; margin: 10mm; }
 html,body{margin:0;padding:0;background:#fff;font-family:system-ui,sans-serif;}
-.page{width:190mm;height:277mm;display:flex;flex-direction:column;align-items:center;justify-content:center;page-break-after:always;}
+.page{width:190mm;min-height:277mm;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:8mm 0;box-sizing:border-box;}
 h1{font-size:22pt;margin:0 0 6mm;text-align:center;color:#000;}
 img{max-width:100%;max-height:240mm;object-fit:contain;filter:grayscale(1) contrast(1.4);}
-.actions{position:fixed;top:8px;left:8px;display:flex;gap:8px;}
+.actions{position:fixed;top:8px;left:8px;display:flex;gap:8px;z-index:10;}
 .actions button{padding:8px 14px;border:1px solid #000;background:#fff;cursor:pointer;border-radius:6px;font-size:14px;}
-@media print{.actions{display:none;}}
+@media print{.actions{display:none;} .page{padding:0;}}
 </style></head><body>
 <div class="actions"><button onclick="window.print()">طباعة</button><button onclick="window.close()">إغلاق</button></div>
-<div class="page"><h1>${res.title}</h1><img src="${res.dataUrl}" alt="coloring"/></div>
-<script>window.addEventListener('load',()=>setTimeout(()=>window.print(),400));</script>
+<div class="page"><h1>${safeTitle}</h1><img id="img" src="${res.dataUrl}" alt="coloring"/></div>
+<script>document.getElementById('img').addEventListener('load',()=>setTimeout(()=>window.print(),300));</script>
 </body></html>`);
       w.document.close();
     } catch (e: any) {
-      toast.error(e?.message || "فشل توليد صفحة التلوين");
+      const msg = e?.message || "فشل توليد صفحة التلوين";
+      try {
+        w.document.open();
+        w.document.write(`<!doctype html><html dir="rtl"><body style="font-family:system-ui;padding:32px;text-align:center;color:#b00"><h2>تعذر إنشاء صفحة التلوين</h2><p>${msg}</p><button onclick="window.close()">إغلاق</button></body></html>`);
+        w.document.close();
+      } catch {}
+      toast.error(msg);
     } finally {
       setColoringLoading(false);
     }

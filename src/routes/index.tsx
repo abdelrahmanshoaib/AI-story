@@ -66,6 +66,9 @@ function Home() {
     setLoading(true);
     try {
       const res = await generateFn({ data: { topic: finalTopic, language, size } });
+      if (!res?.id) {
+        throw new Error(language === "ar" ? "لم يتم إنشاء رابط القصة" : "Story link was not created");
+      }
       qc.invalidateQueries({ queryKey: ["stories"] });
       nav({ to: "/story/$id", params: { id: res.id } });
     } catch (err) {

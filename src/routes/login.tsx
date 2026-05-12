@@ -59,6 +59,19 @@ function LoginPage() {
     }
   }
 
+  async function handleGuest() {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInAnonymously();
+      if (error) throw error;
+      toast.success("مرحباً بك كضيف!");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "تعذر الدخول كضيف");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function handleGoogle() {
     try {
       const { lovable } = await import("@/integrations/lovable/index");
@@ -105,6 +118,10 @@ function LoginPage() {
 
         <Button variant="outline" onClick={handleGoogle} className="w-full h-11 font-medium">
           المتابعة عبر Google
+        </Button>
+
+        <Button variant="secondary" onClick={handleGuest} disabled={loading} className="w-full h-11 font-bold">
+          الدخول كضيف
         </Button>
 
         <p className="text-center text-sm">

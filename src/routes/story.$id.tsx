@@ -67,7 +67,15 @@ function StoryPage() {
     return <div className="min-h-screen grid place-items-center"><Loader2 className="size-8 animate-spin text-primary" /></div>;
   }
   if (story.error || !story.data) {
-    return <div className="min-h-screen grid place-items-center"><p>تعذر تحميل القصة</p></div>;
+    return (
+      <main dir="rtl" className="min-h-screen grid place-items-center px-4">
+        <Card className="worksheet-frame max-w-md text-center space-y-4">
+          <h1 className="text-2xl font-bold">القصة غير موجودة</h1>
+          <p className="text-muted-foreground">قد تكون محذوفة أو لا تخص حسابك الحالي.</p>
+          <Button asChild><Link to="/">العودة للرئيسية</Link></Button>
+        </Card>
+      </main>
+    );
   }
 
   const s = story.data;

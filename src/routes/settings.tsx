@@ -152,6 +152,10 @@ function SettingsPage() {
           daily_goal: Number(form.daily_goal),
           weekly_goal: Number(form.weekly_goal),
           monthly_goal: Number(form.monthly_goal),
+          font_family: form.font_family as "default" | "handwritten" | "serif" | "mono",
+          font_size: form.font_size as "small" | "medium" | "large" | "xlarge",
+          color_theme: form.color_theme as "default" | "ocean" | "forest" | "sunset" | "candy" | "midnight",
+          app_style: form.app_style as "playful" | "minimal" | "classic",
         },
       });
       qc.invalidateQueries({ queryKey: ["profile"] });

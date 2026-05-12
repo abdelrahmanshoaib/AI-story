@@ -50,6 +50,10 @@ function SettingsPage() {
     daily_goal: 1,
     weekly_goal: 5,
     monthly_goal: 20,
+    font_family: "default",
+    font_size: "medium",
+    color_theme: "default",
+    app_style: "playful",
   });
 
   const getProfileFn = useServerFn(getProfile);
@@ -78,18 +82,23 @@ function SettingsPage() {
 
   useEffect(() => {
     if (profile.data) {
+      const p = profile.data as Record<string, unknown>;
       setForm({
-        display_name: profile.data.display_name ?? "",
-        avatar_url: profile.data.avatar_url ?? null,
-        age: profile.data.age ?? 8,
-        arabic_level: profile.data.arabic_level ?? "beginner",
-        english_level: profile.data.english_level ?? "beginner",
-        favorite_topics: profile.data.favorite_topics ?? [],
-        preferred_language: profile.data.preferred_language ?? "ar",
-        preferred_size: profile.data.preferred_size ?? "medium",
-        daily_goal: profile.data.daily_goal ?? 1,
-        weekly_goal: profile.data.weekly_goal ?? 5,
-        monthly_goal: profile.data.monthly_goal ?? 20,
+        display_name: (p.display_name as string) ?? "",
+        avatar_url: (p.avatar_url as string) ?? null,
+        age: (p.age as number) ?? 8,
+        arabic_level: (p.arabic_level as string) ?? "beginner",
+        english_level: (p.english_level as string) ?? "beginner",
+        favorite_topics: (p.favorite_topics as string[]) ?? [],
+        preferred_language: (p.preferred_language as string) ?? "ar",
+        preferred_size: (p.preferred_size as string) ?? "medium",
+        daily_goal: (p.daily_goal as number) ?? 1,
+        weekly_goal: (p.weekly_goal as number) ?? 5,
+        monthly_goal: (p.monthly_goal as number) ?? 20,
+        font_family: (p.font_family as string) ?? "default",
+        font_size: (p.font_size as string) ?? "medium",
+        color_theme: (p.color_theme as string) ?? "default",
+        app_style: (p.app_style as string) ?? "playful",
       });
     }
   }, [profile.data]);

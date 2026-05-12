@@ -202,6 +202,50 @@ export const getStory = createServerFn({ method: "GET" })
     return row;
   });
 
+export const generateColoringPage = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { id: string }) => z.object({ id: z.string().uuid() }).parse(data))
+  .handler(async ({ data, context }) => {
+    const apiKey = process.env.LOVABLE_API_KEY;
+    if (!apiKey) throw new Error("LOVABLE_API_KEY missing");
+
+    const { data: row, error } = await context.supabase
+      .from("stories")
+      .select("title, topic, story_text")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!row) throw new Error("Not found");
+
+    const prompt = `Black and white coloring book page for kids. Pure clean line art only: bold black outlines on a pure white background. No shading, no gray tones, no fill colors, no text, no letters. Large simple shapes suitable for a child to color. Subject: ${row.title} — ${row.topic}. Scene from this story (illustrate the main moment): ${row.story_text.slice(0, 400)}`;
+
+    const imgRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Lovable-API-Key": apiKey,
+        "X-Lovable-AIG-SDK": "vercel-ai-sdk",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash-image",
+        messages: [{ role: "user", content: prompt }],
+        modalities: ["image", "text"],
+      }),
+    });
+    if (!imgRes.ok) {
+      throw new Error("فشل توليد صفحة التلوين، حاول مرة أخرى");
+    }
+    const imgJson = await imgRes.json();
+    const images = imgJson?.choices?.[0]?.message?.images;
+    const b64 =
+      images?.[0]?.image_url?.url ??
+      images?.[0]?.image_url ??
+      imgJson?.choices?.[0]?.message?.content?.[0]?.image_url?.url;
+    if (!b64 || typeof b64 !== "string") throw new Error("لم يتم استلام الصورة");
+    const dataUrl = b64.startsWith("data:") ? b64 : `data:image/png;base64,${b64}`;
+    return { dataUrl, title: row.title };
+  });
+
 export const deleteStory = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: { id: string }) => z.object({ id: z.string().uuid() }).parse(data))

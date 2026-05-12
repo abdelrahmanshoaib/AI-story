@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Public can view story images" ON storage.objects;

@@ -50,6 +50,10 @@ function SettingsPage() {
     daily_goal: 1,
     weekly_goal: 5,
     monthly_goal: 20,
+    font_family: "default",
+    font_size: "medium",
+    color_theme: "default",
+    app_style: "playful",
   });
 
   const getProfileFn = useServerFn(getProfile);
@@ -78,18 +82,23 @@ function SettingsPage() {
 
   useEffect(() => {
     if (profile.data) {
+      const p = profile.data as Record<string, unknown>;
       setForm({
-        display_name: profile.data.display_name ?? "",
-        avatar_url: profile.data.avatar_url ?? null,
-        age: profile.data.age ?? 8,
-        arabic_level: profile.data.arabic_level ?? "beginner",
-        english_level: profile.data.english_level ?? "beginner",
-        favorite_topics: profile.data.favorite_topics ?? [],
-        preferred_language: profile.data.preferred_language ?? "ar",
-        preferred_size: profile.data.preferred_size ?? "medium",
-        daily_goal: profile.data.daily_goal ?? 1,
-        weekly_goal: profile.data.weekly_goal ?? 5,
-        monthly_goal: profile.data.monthly_goal ?? 20,
+        display_name: (p.display_name as string) ?? "",
+        avatar_url: (p.avatar_url as string) ?? null,
+        age: (p.age as number) ?? 8,
+        arabic_level: (p.arabic_level as string) ?? "beginner",
+        english_level: (p.english_level as string) ?? "beginner",
+        favorite_topics: (p.favorite_topics as string[]) ?? [],
+        preferred_language: (p.preferred_language as string) ?? "ar",
+        preferred_size: (p.preferred_size as string) ?? "medium",
+        daily_goal: (p.daily_goal as number) ?? 1,
+        weekly_goal: (p.weekly_goal as number) ?? 5,
+        monthly_goal: (p.monthly_goal as number) ?? 20,
+        font_family: (p.font_family as string) ?? "default",
+        font_size: (p.font_size as string) ?? "medium",
+        color_theme: (p.color_theme as string) ?? "default",
+        app_style: (p.app_style as string) ?? "playful",
       });
     }
   }, [profile.data]);
@@ -143,6 +152,10 @@ function SettingsPage() {
           daily_goal: Number(form.daily_goal),
           weekly_goal: Number(form.weekly_goal),
           monthly_goal: Number(form.monthly_goal),
+          font_family: form.font_family as "default" | "handwritten" | "serif" | "mono",
+          font_size: form.font_size as "small" | "medium" | "large" | "xlarge",
+          color_theme: form.color_theme as "default" | "ocean" | "forest" | "sunset" | "candy" | "midnight",
+          app_style: form.app_style as "playful" | "minimal" | "classic",
         },
       });
       qc.invalidateQueries({ queryKey: ["profile"] });
@@ -316,6 +329,62 @@ function SettingsPage() {
             <div className="space-y-2">
               <Label>قصص في الشهر</Label>
               <Input type="number" min={0} max={1000} value={form.monthly_goal} onChange={(e) => setForm({ ...form, monthly_goal: Number(e.target.value) })} />
+            </div>
+          </div>
+        </Card>
+
+        {/* Appearance */}
+        <Card className="worksheet-frame">
+          <h2 className="text-xl font-bold mb-4">مظهر التطبيق</h2>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>نوع الخط</Label>
+              <Select value={form.font_family} onValueChange={(v) => setForm({ ...form, font_family: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="default">افتراضي (Cairo)</SelectItem>
+                  <SelectItem value="handwritten">خط اليد</SelectItem>
+                  <SelectItem value="serif">كلاسيكي</SelectItem>
+                  <SelectItem value="mono">رقمي</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>حجم الخط</Label>
+              <Select value={form.font_size} onValueChange={(v) => setForm({ ...form, font_size: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="small">صغير</SelectItem>
+                  <SelectItem value="medium">متوسط</SelectItem>
+                  <SelectItem value="large">كبير</SelectItem>
+                  <SelectItem value="xlarge">كبير جدًا</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>مجموعة الألوان</Label>
+              <Select value={form.color_theme} onValueChange={(v) => setForm({ ...form, color_theme: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="default">دافئ (افتراضي)</SelectItem>
+                  <SelectItem value="ocean">محيط</SelectItem>
+                  <SelectItem value="forest">غابة</SelectItem>
+                  <SelectItem value="sunset">غروب</SelectItem>
+                  <SelectItem value="candy">حلوى</SelectItem>
+                  <SelectItem value="midnight">ليلي</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>أسلوب التطبيق</Label>
+              <Select value={form.app_style} onValueChange={(v) => setForm({ ...form, app_style: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="playful">مرح</SelectItem>
+                  <SelectItem value="minimal">بسيط</SelectItem>
+                  <SelectItem value="classic">كلاسيكي</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </Card>

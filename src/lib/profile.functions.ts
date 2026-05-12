@@ -14,6 +14,10 @@ const ProfileUpdateSchema = z.object({
   daily_goal: z.number().int().min(0).max(50).optional(),
   weekly_goal: z.number().int().min(0).max(200).optional(),
   monthly_goal: z.number().int().min(0).max(1000).optional(),
+  font_family: z.enum(["default", "handwritten", "serif", "mono"]).optional(),
+  font_size: z.enum(["small", "medium", "large", "xlarge"]).optional(),
+  color_theme: z.enum(["default", "ocean", "forest", "sunset", "candy", "midnight"]).optional(),
+  app_style: z.enum(["playful", "minimal", "classic"]).optional(),
 });
 
 export const getProfile = createServerFn({ method: "GET" })

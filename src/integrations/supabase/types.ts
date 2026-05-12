@@ -17,13 +17,17 @@ export type Database = {
       profiles: {
         Row: {
           age: number | null
+          app_style: string | null
           arabic_level: string | null
           avatar_url: string | null
+          color_theme: string | null
           created_at: string
           daily_goal: number | null
           display_name: string | null
           english_level: string | null
           favorite_topics: string[] | null
+          font_family: string | null
+          font_size: string | null
           id: string
           monthly_goal: number | null
           preferred_language: string | null
@@ -34,13 +38,17 @@ export type Database = {
         }
         Insert: {
           age?: number | null
+          app_style?: string | null
           arabic_level?: string | null
           avatar_url?: string | null
+          color_theme?: string | null
           created_at?: string
           daily_goal?: number | null
           display_name?: string | null
           english_level?: string | null
           favorite_topics?: string[] | null
+          font_family?: string | null
+          font_size?: string | null
           id?: string
           monthly_goal?: number | null
           preferred_language?: string | null
@@ -51,13 +59,17 @@ export type Database = {
         }
         Update: {
           age?: number | null
+          app_style?: string | null
           arabic_level?: string | null
           avatar_url?: string | null
+          color_theme?: string | null
           created_at?: string
           daily_goal?: number | null
           display_name?: string | null
           english_level?: string | null
           favorite_topics?: string[] | null
+          font_family?: string | null
+          font_size?: string | null
           id?: string
           monthly_goal?: number | null
           preferred_language?: string | null
@@ -104,6 +116,39 @@ export type Database = {
           title?: string
           topic?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      vocabulary: {
+        Row: {
+          created_at: string
+          id: string
+          language: string
+          note: string | null
+          story_id: string | null
+          translation: string | null
+          user_id: string
+          word: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          language?: string
+          note?: string | null
+          story_id?: string | null
+          translation?: string | null
+          user_id: string
+          word: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          language?: string
+          note?: string | null
+          story_id?: string | null
+          translation?: string | null
+          user_id?: string
+          word?: string
         }
         Relationships: []
       }

@@ -98,9 +98,14 @@ function StoryPage() {
         <Button variant="ghost" asChild>
           <Link to="/"><ArrowRight className="size-4 ml-1" /> {isAr ? "العودة" : "Back"}</Link>
         </Button>
-        <Button variant="outline" onClick={() => window.print()}>
-          <Printer className="size-4 ml-1" /> {isAr ? "طباعة / PDF" : "Print / PDF"}
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="ghost" asChild>
+            <Link to="/vocabulary"><BookMarked className="size-4 ml-1" /> {isAr ? "كلماتي" : "Vocabulary"}</Link>
+          </Button>
+          <Button variant="outline" onClick={() => window.print()}>
+            <Printer className="size-4 ml-1" /> {isAr ? "طباعة / PDF" : "Print / PDF"}
+          </Button>
+        </div>
       </div>
 
       <Card className="worksheet-frame space-y-6">

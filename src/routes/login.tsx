@@ -120,6 +120,10 @@ function LoginPage() {
           المتابعة عبر Google
         </Button>
 
+        <Button variant="secondary" onClick={handleGuest} disabled={loading} className="w-full h-11 font-bold">
+          الدخول كضيف
+        </Button>
+
         <p className="text-center text-sm">
           {mode === "signin" ? "ليس لديك حساب؟" : "لديك حساب بالفعل؟"}{" "}
           <button type="button" className="text-secondary font-bold underline" onClick={() => setMode(mode === "signin" ? "signup" : "signin")}>

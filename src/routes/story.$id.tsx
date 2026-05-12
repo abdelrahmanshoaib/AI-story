@@ -126,11 +126,6 @@ function StoryPage() {
             )}
           </div>
         </section>
-            {s.image_url && (
-              <img src={s.image_url} alt={s.title} className="w-40 h-40 md:w-48 md:h-48 object-contain shrink-0" />
-            )}
-          </div>
-        </section>
 
         <section className="space-y-5">
           {questions.map((q, i) => {

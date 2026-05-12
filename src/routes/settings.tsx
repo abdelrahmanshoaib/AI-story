@@ -333,6 +333,62 @@ function SettingsPage() {
           </div>
         </Card>
 
+        {/* Appearance */}
+        <Card className="worksheet-frame">
+          <h2 className="text-xl font-bold mb-4">مظهر التطبيق</h2>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>نوع الخط</Label>
+              <Select value={form.font_family} onValueChange={(v) => setForm({ ...form, font_family: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="default">افتراضي (Cairo)</SelectItem>
+                  <SelectItem value="handwritten">خط اليد</SelectItem>
+                  <SelectItem value="serif">كلاسيكي</SelectItem>
+                  <SelectItem value="mono">رقمي</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>حجم الخط</Label>
+              <Select value={form.font_size} onValueChange={(v) => setForm({ ...form, font_size: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="small">صغير</SelectItem>
+                  <SelectItem value="medium">متوسط</SelectItem>
+                  <SelectItem value="large">كبير</SelectItem>
+                  <SelectItem value="xlarge">كبير جدًا</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>مجموعة الألوان</Label>
+              <Select value={form.color_theme} onValueChange={(v) => setForm({ ...form, color_theme: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="default">دافئ (افتراضي)</SelectItem>
+                  <SelectItem value="ocean">محيط</SelectItem>
+                  <SelectItem value="forest">غابة</SelectItem>
+                  <SelectItem value="sunset">غروب</SelectItem>
+                  <SelectItem value="candy">حلوى</SelectItem>
+                  <SelectItem value="midnight">ليلي</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>أسلوب التطبيق</Label>
+              <Select value={form.app_style} onValueChange={(v) => setForm({ ...form, app_style: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="playful">مرح</SelectItem>
+                  <SelectItem value="minimal">بسيط</SelectItem>
+                  <SelectItem value="classic">كلاسيكي</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </Card>
+
         <div className="sticky bottom-4">
           <Button type="submit" disabled={saving} className="w-full h-14 text-lg font-bold rounded-2xl shadow-lg bg-secondary hover:bg-secondary/90 text-secondary-foreground">
             {saving ? <Loader2 className="size-5 animate-spin ml-2" /> : <Save className="size-5 ml-2" />}

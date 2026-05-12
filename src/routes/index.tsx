@@ -102,23 +102,42 @@ function Home() {
     return <div className="min-h-screen grid place-items-center"><Loader2 className="size-8 animate-spin text-primary" /></div>;
   }
 
-  const topics = language === "ar" ? TOPICS_AR : TOPICS_EN;
+  const baseTopics = language === "ar" ? TOPICS_AR : TOPICS_EN;
+  const favTopics = profile.data?.favorite_topics ?? [];
+  const topics = Array.from(new Set([...favTopics, ...baseTopics]));
+  const displayName = profile.data?.display_name;
 
   return (
     <main dir="rtl" className="min-h-screen px-4 py-8 max-w-6xl mx-auto">
-      <header className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-3">
-          <div className="size-12 rounded-2xl bg-primary grid place-items-center shadow-md rotate-[-4deg]">
+      <header className="flex items-center justify-between mb-8 gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="size-12 rounded-2xl bg-primary grid place-items-center shadow-md rotate-[-4deg] shrink-0">
             <BookOpen className="size-6 text-primary-foreground" />
           </div>
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold">مولّد قصص الأطفال</h1>
+          <div className="min-w-0">
+            <h1 className="text-xl md:text-3xl font-bold truncate">
+              {displayName ? `أهلاً ${displayName}` : "مولّد قصص الأطفال"}
+            </h1>
             <p className="text-xs text-muted-foreground">قصص بالذكاء الاصطناعي مع رسومات وأسئلة</p>
           </div>
         </div>
-        <Button variant="ghost" size="sm" onClick={handleSignOut}>
-          <LogOut className="size-4 ml-1" /> خروج
-        </Button>
+        <div className="flex items-center gap-2 shrink-0">
+          <Link to="/settings" className="flex items-center gap-2">
+            <div className="size-10 rounded-full overflow-hidden bg-muted border-2 border-primary/40 grid place-items-center hover:border-primary transition">
+              {profile.data?.avatar_url ? (
+                <img src={profile.data.avatar_url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <User className="size-5 text-muted-foreground" />
+              )}
+            </div>
+          </Link>
+          <Button asChild variant="ghost" size="sm">
+            <Link to="/settings"><SettingsIcon className="size-4 ml-1" /> الإعدادات</Link>
+          </Button>
+          <Button variant="ghost" size="sm" onClick={handleSignOut}>
+            <LogOut className="size-4 ml-1" /> خروج
+          </Button>
+        </div>
       </header>
 
       <div className="grid lg:grid-cols-[1.1fr_1fr] gap-6">

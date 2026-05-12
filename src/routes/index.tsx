@@ -39,6 +39,7 @@ function Home() {
   const generateFn = useServerFn(generateStory);
   const listFn = useServerFn(listStories);
   const deleteFn = useServerFn(deleteStory);
+  const getProfileFn = useServerFn(getProfile);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -56,6 +57,20 @@ function Home() {
     queryFn: () => listFn(),
     enabled: !!authed,
   });
+
+  const profile = useQuery({
+    queryKey: ["profile"],
+    queryFn: () => getProfileFn(),
+    enabled: !!authed,
+  });
+
+  // Apply profile defaults once
+  useEffect(() => {
+    if (profile.data) {
+      if (profile.data.preferred_language) setLanguage(profile.data.preferred_language as "ar" | "en");
+      if (profile.data.preferred_size) setSize(profile.data.preferred_size as "small" | "medium" | "large");
+    }
+  }, [profile.data]);
 
   async function handleGenerate(e: React.FormEvent) {
     e.preventDefault();

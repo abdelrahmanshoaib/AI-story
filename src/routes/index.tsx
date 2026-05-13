@@ -145,6 +145,11 @@ function Home() {
           <Button asChild variant="ghost" size="sm">
             <Link to="/settings"><SettingsIcon className="size-4 ml-1" /> الإعدادات</Link>
           </Button>
+          {adminCheck.data?.isAdmin && (
+            <Button asChild variant="default" size="sm">
+              <Link to="/admin"><Shield className="size-4 ml-1" /> الأدمن</Link>
+            </Button>
+          )}
           <Button variant="ghost" size="sm" onClick={handleSignOut}>
             <LogOut className="size-4 ml-1" /> خروج
           </Button>

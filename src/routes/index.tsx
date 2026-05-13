@@ -66,6 +66,12 @@ function Home() {
     enabled: !!authed,
   });
 
+  const adminCheck = useQuery({
+    queryKey: ["isAdmin"],
+    queryFn: () => isAdminQuery(),
+    enabled: !!authed,
+  });
+
   // Apply profile defaults once
   useEffect(() => {
     if (profile.data) {

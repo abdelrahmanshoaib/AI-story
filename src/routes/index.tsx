@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { generateStory, listStories, deleteStory } from "@/lib/story.functions";
 import { getProfile } from "@/lib/profile.functions";
+import { isAdmin as isAdminFn } from "@/lib/admin.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

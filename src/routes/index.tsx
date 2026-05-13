@@ -41,6 +41,7 @@ function Home() {
   const listFn = useServerFn(listStories);
   const deleteFn = useServerFn(deleteStory);
   const getProfileFn = useServerFn(getProfile);
+  const isAdminQuery = useServerFn(isAdminFn);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {

@@ -5,13 +5,14 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { generateStory, listStories, deleteStory } from "@/lib/story.functions";
 import { getProfile } from "@/lib/profile.functions";
+import { isAdmin as isAdminFn } from "@/lib/admin.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { BookOpen, Loader2, Sparkles, Trash2, LogOut, Wand2, Settings as SettingsIcon, User, BookMarked } from "lucide-react";
+import { BookOpen, Loader2, Sparkles, Trash2, LogOut, Wand2, Settings as SettingsIcon, User, BookMarked, Shield } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: Home,
@@ -40,6 +41,7 @@ function Home() {
   const listFn = useServerFn(listStories);
   const deleteFn = useServerFn(deleteStory);
   const getProfileFn = useServerFn(getProfile);
+  const isAdminQuery = useServerFn(isAdminFn);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -61,6 +63,12 @@ function Home() {
   const profile = useQuery({
     queryKey: ["profile"],
     queryFn: () => getProfileFn(),
+    enabled: !!authed,
+  });
+
+  const adminCheck = useQuery({
+    queryKey: ["isAdmin"],
+    queryFn: () => isAdminQuery(),
     enabled: !!authed,
   });
 
@@ -137,6 +145,11 @@ function Home() {
           <Button asChild variant="ghost" size="sm">
             <Link to="/settings"><SettingsIcon className="size-4 ml-1" /> الإعدادات</Link>
           </Button>
+          {adminCheck.data?.isAdmin && (
+            <Button asChild variant="default" size="sm">
+              <Link to="/admin"><Shield className="size-4 ml-1" /> الأدمن</Link>
+            </Button>
+          )}
           <Button variant="ghost" size="sm" onClick={handleSignOut}>
             <LogOut className="size-4 ml-1" /> خروج
           </Button>

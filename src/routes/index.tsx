@@ -36,6 +36,8 @@ function Home() {
   const [customTopic, setCustomTopic] = useState("");
   const [language, setLanguage] = useState<"ar" | "en">("ar");
   const [size, setSize] = useState<"small" | "medium" | "large">("medium");
+  const [ageGroup, setAgeGroup] = useState<AgeGroupId | "auto">("auto");
+  const [activeCategory, setActiveCategory] = useState<string>(KIDS_CATEGORIES[0].id);
   const [loading, setLoading] = useState(false);
 
   const generateFn = useServerFn(generateStory);

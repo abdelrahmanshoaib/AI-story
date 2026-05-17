@@ -92,7 +92,8 @@ function Home() {
     }
     setLoading(true);
     try {
-      const res = await generateFn({ data: { topic: finalTopic, language, size } });
+      const ageOverride = ageGroup === "auto" ? undefined : AGE_GROUPS.find((g) => g.id === ageGroup)?.age;
+      const res = await generateFn({ data: { topic: finalTopic, language, size, ageOverride } });
       if (!res?.id) {
         throw new Error(language === "ar" ? "لم يتم إنشاء رابط القصة" : "Story link was not created");
       }

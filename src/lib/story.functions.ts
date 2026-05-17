@@ -24,6 +24,7 @@ const InputSchema = z.object({
   topic: z.string().min(2).max(200),
   language: z.enum(["ar", "en"]),
   size: z.enum(["small", "medium", "large"]),
+  ageOverride: z.number().int().min(3).max(14).optional(),
 });
 
 const sizeWords: Record<string, string> = {
@@ -50,11 +51,13 @@ export const generateStory = createServerFn({ method: "POST" })
       .select("age, arabic_level, english_level")
       .eq("user_id", context.userId)
       .maybeSingle();
-    const age = profile?.age ?? 8;
+    const age = data.ageOverride ?? profile?.age ?? 8;
     const level = data.language === "ar" ? (profile?.arabic_level ?? "beginner") : (profile?.english_level ?? "beginner");
     const levelHint = level === "beginner" ? "very simple vocabulary, short sentences" : level === "intermediate" ? "moderate vocabulary, varied sentence structure" : "rich vocabulary, descriptive language";
 
-    const system = `You are a children's story writer. Generate a short, engaging story for a ${age}-year-old child about the requested topic, in ${langName}. Use ${levelHint} appropriate for a ${level} ${langName} reader. Return strictly valid JSON matching the schema. Story length: ${sizeWords[data.size]}. Include 4 to 6 comprehension questions: mix of mcq (with an "options" array of 3 strings), true_false (no options), and fill_blank (no options). For mcq the correctAnswer must EXACTLY match one of the options. For true_false the correctAnswer must be "true" or "false" (or "صح"/"خطأ" in Arabic). For fill_blank the correctAnswer is the single missing word. Always include a short kid-friendly "explanation" for each question in the same language. The imagePrompt must be a vivid English description for an illustration of the main scene (no text, no words in the image).`;
+    const safetyRules = `STRICT CONTENT RULES (MUST FOLLOW):\n- 100% safe and appropriate for a ${age}-year-old child.\n- Respect Islamic and Arabic culture and values at all times.\n- Never include violence, fear, horror, romance, magic that contradicts Islam, alcohol, music idolization, or any inappropriate content.\n- Never depict or name Prophets in the image prompt; for prophet stories, describe scenery/symbols only (desert, palm trees, a cave, a ship, etc.) with NO human faces of prophets.\n- Always include a clear moral or educational value.\n- End the story with a positive, happy ending AND a short encouraging line for the child${data.language === "ar" ? ' such as: "بارك الله فيك يا بطل", "ما شاء الله عليك", "العلم نور يا بطل", "المسلم الذكي يحب التعلم".' : "."}`;
+
+    const system = `You are an expert children's educator and storyteller for Muslim Arab kids. Write a short, engaging, age-appropriate story about the requested topic in ${langName} for a ${age}-year-old. Use ${levelHint}. Story length: ${sizeWords[data.size]}. The story MUST include: an attractive title, a fun intro, simple narration, one interesting fact or piece of useful information, a clear moral value, a positive happy ending, and a short encouraging sentence to the child at the very end of the story text.\n\n${safetyRules}\n\nReturn strictly valid JSON matching the schema. Include 4 to 6 comprehension questions: mix of mcq (with an "options" array of 3 strings), true_false (no options), and fill_blank (no options). For mcq the correctAnswer must EXACTLY match one of the options. For true_false the correctAnswer must be "true" or "false" (or "صح"/"خطأ" in Arabic). For fill_blank the correctAnswer is the single missing word. Always include a short kid-friendly "explanation" for each question in the same language. The imagePrompt must be a vivid English description for a colorful child-safe cartoon illustration of the main scene (no text, no words, no scary elements, no faces of prophets).`;
 
     async function tryGenerate() {
       const { experimental_output } = await generateText({

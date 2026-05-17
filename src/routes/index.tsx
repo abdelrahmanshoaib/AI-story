@@ -13,6 +13,7 @@ import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { BookOpen, Loader2, Sparkles, Trash2, LogOut, Wand2, Settings as SettingsIcon, User, BookMarked, Shield } from "lucide-react";
+import { KIDS_CATEGORIES, AGE_GROUPS, type AgeGroupId } from "@/lib/kids-topics";
 
 export const Route = createFileRoute("/")({
   component: Home,
@@ -35,6 +36,8 @@ function Home() {
   const [customTopic, setCustomTopic] = useState("");
   const [language, setLanguage] = useState<"ar" | "en">("ar");
   const [size, setSize] = useState<"small" | "medium" | "large">("medium");
+  const [ageGroup, setAgeGroup] = useState<AgeGroupId | "auto">("auto");
+  const [activeCategory, setActiveCategory] = useState<string>(KIDS_CATEGORIES[0].id);
   const [loading, setLoading] = useState(false);
 
   const generateFn = useServerFn(generateStory);
@@ -89,7 +92,8 @@ function Home() {
     }
     setLoading(true);
     try {
-      const res = await generateFn({ data: { topic: finalTopic, language, size } });
+      const ageOverride = ageGroup === "auto" ? undefined : AGE_GROUPS.find((g) => g.id === ageGroup)?.age;
+      const res = await generateFn({ data: { topic: finalTopic, language, size, ageOverride } });
       if (!res?.id) {
         throw new Error(language === "ar" ? "لم يتم إنشاء رابط القصة" : "Story link was not created");
       }
@@ -156,8 +160,56 @@ function Home() {
         </div>
       </header>
 
+      {/* مكتبة المحتوى التوعوي للأطفال */}
+      <Card className="worksheet-frame mb-6">
+        <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Sparkles className="size-5 text-secondary" />
+            <h2 className="text-xl md:text-2xl font-bold">المحتوى التوعوي للأطفال</h2>
+          </div>
+          <p className="text-xs md:text-sm text-muted-foreground">اختر موضوعاً جاهزاً وابدأ التعلّم بإذن الله ✨</p>
+        </div>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {KIDS_CATEGORIES.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => setActiveCategory(c.id)}
+              className={`px-3 py-1.5 rounded-full border-2 text-sm font-bold transition ${activeCategory === c.id ? "bg-secondary border-secondary text-secondary-foreground" : "bg-card border-border hover:border-secondary"}`}
+            >
+              <span className="ml-1">{c.emoji}</span> {c.title}
+            </button>
+          ))}
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          {KIDS_CATEGORIES.find((c) => c.id === activeCategory)?.topics.map((t) => {
+            const Icon = t.icon;
+            const isActive = topic === t.prompt && !customTopic;
+            return (
+              <button
+                key={t.label}
+                type="button"
+                onClick={() => {
+                  setTopic(t.prompt);
+                  setCustomTopic("");
+                  setLanguage("ar");
+                  const form = document.getElementById("create-story-form");
+                  form?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+                className={`flex flex-col items-center gap-2 p-3 rounded-2xl border-2 transition text-center ${isActive ? "bg-primary/10 border-primary" : "bg-card border-border hover:border-primary hover:bg-primary/5"}`}
+              >
+                <div className={`size-10 rounded-xl grid place-items-center ${isActive ? "bg-primary text-primary-foreground" : "bg-secondary/15 text-secondary"}`}>
+                  <Icon className="size-5" />
+                </div>
+                <span className="text-xs md:text-sm font-bold leading-tight">{t.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </Card>
+
       <div className="grid lg:grid-cols-[1.1fr_1fr] gap-6">
-        <Card className="worksheet-frame">
+        <Card id="create-story-form" className="worksheet-frame">
           <div className="flex items-center gap-2 mb-5">
             <Wand2 className="size-5 text-secondary" />
             <h2 className="text-2xl font-bold">أنشئ قصة جديدة</h2>
@@ -177,6 +229,11 @@ function Home() {
                   </button>
                 ))}
               </div>
+              {topic && !customTopic && (
+                <p className="text-xs text-muted-foreground bg-primary/5 border border-primary/20 rounded-lg px-3 py-2 mt-2">
+                  ✅ الموضوع المختار: <span className="font-bold">{topic}</span>
+                </p>
+              )}
               <Input
                 placeholder={language === "ar" ? "أو اكتب موضوعاً مخصصاً (مثل: قصة عن النبي يوسف)" : "Or type a custom topic"}
                 value={customTopic}
@@ -185,7 +242,7 @@ function Home() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               <div className="space-y-2">
                 <Label className="font-bold">اللغة</Label>
                 <Select value={language} onValueChange={(v) => setLanguage(v as "ar" | "en")}>
@@ -204,6 +261,18 @@ function Home() {
                     <SelectItem value="small">صغيرة</SelectItem>
                     <SelectItem value="medium">متوسطة</SelectItem>
                     <SelectItem value="large">كبيرة</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2 col-span-2 md:col-span-1">
+                <Label className="font-bold">الفئة العمرية</Label>
+                <Select value={ageGroup} onValueChange={(v) => setAgeGroup(v as AgeGroupId | "auto")}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="auto">حسب ملفي</SelectItem>
+                    {AGE_GROUPS.map((g) => (
+                      <SelectItem key={g.id} value={g.id}>{g.label}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

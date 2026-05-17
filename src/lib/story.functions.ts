@@ -24,6 +24,7 @@ const InputSchema = z.object({
   topic: z.string().min(2).max(200),
   language: z.enum(["ar", "en"]),
   size: z.enum(["small", "medium", "large"]),
+  ageOverride: z.number().int().min(3).max(14).optional(),
 });
 
 const sizeWords: Record<string, string> = {

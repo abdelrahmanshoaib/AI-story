@@ -13,6 +13,7 @@ import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { BookOpen, Loader2, Sparkles, Trash2, LogOut, Wand2, Settings as SettingsIcon, User, BookMarked, Shield } from "lucide-react";
+import { KIDS_CATEGORIES, AGE_GROUPS, type AgeGroupId } from "@/lib/kids-topics";
 
 export const Route = createFileRoute("/")({
   component: Home,

@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { BookOpen, Loader2, Sparkles, Trash2, LogOut, Wand2, Settings as SettingsIcon, User, BookMarked, Shield } from "lucide-react";
+import { BookOpen, Loader2, Sparkles, Trash2, LogOut, Wand2, Settings as SettingsIcon, User, BookMarked, Shield, Compass } from "lucide-react";
 import { KIDS_CATEGORIES, AGE_GROUPS, type AgeGroupId } from "@/lib/kids-topics";
 
 export const Route = createFileRoute("/")({
@@ -160,14 +160,38 @@ function Home() {
         </div>
       </header>
 
-      {/* مكتبة المحتوى التوعوي للأطفال */}
+      {/* بطاقتا الأقسام: قصص vs معلومات */}
+      <div className="grid md:grid-cols-2 gap-4 mb-6">
+        <div className="rounded-3xl p-5 border-2 border-primary bg-primary/5 flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <BookOpen className="size-5 text-primary" />
+              <h2 className="text-lg md:text-xl font-extrabold">قسم القصص</h2>
+            </div>
+            <p className="text-xs md:text-sm text-muted-foreground">قصص تربوية بنهايات سعيدة وقيم إسلامية</p>
+          </div>
+          <span className="text-2xl">📖</span>
+        </div>
+        <Link to="/explore" className="rounded-3xl p-5 border-2 border-secondary bg-secondary/5 flex items-center justify-between gap-3 hover:bg-secondary/10 transition">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <Compass className="size-5 text-secondary" />
+              <h2 className="text-lg md:text-xl font-extrabold">اكتشف وتعلّم</h2>
+            </div>
+            <p className="text-xs md:text-sm text-muted-foreground">معلومات وحقائق ممتعة ودقيقة — ليست قصصاً</p>
+          </div>
+          <span className="text-2xl">💡</span>
+        </Link>
+      </div>
+
+      {/* مكتبة مواضيع القصص */}
       <Card className="worksheet-frame mb-6">
         <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
           <div className="flex items-center gap-2">
             <Sparkles className="size-5 text-secondary" />
-            <h2 className="text-xl md:text-2xl font-bold">المحتوى التوعوي للأطفال</h2>
+            <h2 className="text-xl md:text-2xl font-bold">مواضيع جاهزة للقصص</h2>
           </div>
-          <p className="text-xs md:text-sm text-muted-foreground">اختر موضوعاً جاهزاً وابدأ التعلّم بإذن الله ✨</p>
+          <p className="text-xs md:text-sm text-muted-foreground">اختر موضوعاً لتنشأ قصة ممتعة بإذن الله ✨</p>
         </div>
         <div className="flex flex-wrap gap-2 mb-4">
           {KIDS_CATEGORIES.map((c) => (

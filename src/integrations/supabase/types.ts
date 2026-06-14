@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_settings: {
+        Row: {
+          base_url: string | null
+          created_at: string
+          has_custom_key: boolean
+          id: boolean
+          model: string
+          provider: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          base_url?: string | null
+          created_at?: string
+          has_custom_key?: boolean
+          id?: boolean
+          model?: string
+          provider?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          base_url?: string | null
+          created_at?: string
+          has_custom_key?: boolean
+          id?: boolean
+          model?: string
+          provider?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           age: number | null

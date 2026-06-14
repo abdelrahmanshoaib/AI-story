@@ -160,6 +160,7 @@ function AdminPage() {
         <TabsList>
           <TabsTrigger value="users">المستخدمون</TabsTrigger>
           <TabsTrigger value="stories">القصص</TabsTrigger>
+          <TabsTrigger value="ai">إعدادات الـ AI</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users" className="mt-4">

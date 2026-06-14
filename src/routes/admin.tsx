@@ -282,6 +282,10 @@ function AdminPage() {
             )}
           </Card>
         </TabsContent>
+
+        <TabsContent value="ai" className="mt-4">
+          <AiSettingsPanel />
+        </TabsContent>
       </Tabs>
     </main>
   );

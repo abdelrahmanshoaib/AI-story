@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { createLovableAiGatewayProvider } from "@/lib/ai-gateway";
+import { resolveAiProvider } from "@/lib/ai-provider.server";
 import { generateText, Output } from "ai";
 import { z } from "zod";
 

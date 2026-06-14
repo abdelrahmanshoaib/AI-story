@@ -12,15 +12,20 @@ import {
   deleteStoryAdmin,
   deleteUserAdmin,
 } from "@/lib/admin.functions";
+import { getAiSettings, saveAiSettings, testAiConnection } from "@/lib/ai-settings.functions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import {
   Loader2, Shield, Users, BookOpen, BookMarked, TrendingUp,
-  Trash2, ArrowRight, ShieldCheck, ShieldOff, Search,
+  Trash2, ArrowRight, ShieldCheck, ShieldOff, Search, KeyRound, Sparkles, CheckCircle2, XCircle,
 } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({

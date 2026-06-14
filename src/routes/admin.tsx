@@ -12,15 +12,20 @@ import {
   deleteStoryAdmin,
   deleteUserAdmin,
 } from "@/lib/admin.functions";
+import { getAiSettings, saveAiSettings, testAiConnection } from "@/lib/ai-settings.functions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import {
   Loader2, Shield, Users, BookOpen, BookMarked, TrendingUp,
-  Trash2, ArrowRight, ShieldCheck, ShieldOff, Search,
+  Trash2, ArrowRight, ShieldCheck, ShieldOff, Search, KeyRound, Sparkles, CheckCircle2, XCircle,
 } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
@@ -155,6 +160,7 @@ function AdminPage() {
         <TabsList>
           <TabsTrigger value="users">المستخدمون</TabsTrigger>
           <TabsTrigger value="stories">القصص</TabsTrigger>
+          <TabsTrigger value="ai">إعدادات الـ AI</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users" className="mt-4">
@@ -276,6 +282,10 @@ function AdminPage() {
             )}
           </Card>
         </TabsContent>
+
+        <TabsContent value="ai" className="mt-4">
+          <AiSettingsPanel />
+        </TabsContent>
       </Tabs>
     </main>
   );
@@ -289,6 +299,201 @@ function StatCard({ icon: Icon, label, value }: { icon: any; label: string; valu
         <span className="text-2xl font-bold">{value ?? "—"}</span>
       </div>
       <p className="text-xs text-muted-foreground mt-2">{label}</p>
+    </Card>
+  );
+}
+
+const MODEL_PRESETS: Record<string, { label: string; models: { id: string; name: string }[] }> = {
+  lovable: {
+    label: "Lovable AI (افتراضي — لا يحتاج مفتاح)",
+    models: [
+      { id: "google/gemini-2.5-flash", name: "Gemini 2.5 Flash" },
+      { id: "google/gemini-2.5-pro", name: "Gemini 2.5 Pro" },
+      { id: "google/gemini-2.5-flash-lite", name: "Gemini 2.5 Flash Lite" },
+      { id: "openai/gpt-5-mini", name: "GPT-5 Mini" },
+      { id: "openai/gpt-5", name: "GPT-5" },
+    ],
+  },
+  openai: {
+    label: "OpenAI (مفتاحك الخاص)",
+    models: [
+      { id: "gpt-4o-mini", name: "GPT-4o Mini" },
+      { id: "gpt-4o", name: "GPT-4o" },
+      { id: "gpt-4.1-mini", name: "GPT-4.1 Mini" },
+      { id: "gpt-4.1", name: "GPT-4.1" },
+    ],
+  },
+  gemini: {
+    label: "Google Gemini (مفتاحك الخاص)",
+    models: [
+      { id: "gemini-2.0-flash", name: "Gemini 2.0 Flash" },
+      { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash" },
+      { id: "gemini-2.5-pro", name: "Gemini 2.5 Pro" },
+    ],
+  },
+  custom: {
+    label: "مزوّد مخصص (OpenAI-Compatible)",
+    models: [],
+  },
+};
+
+function AiSettingsPanel() {
+  const qc = useQueryClient();
+  const getFn = useServerFn(getAiSettings);
+  const saveFn = useServerFn(saveAiSettings);
+  const testFn = useServerFn(testAiConnection);
+
+  const settings = useQuery({ queryKey: ["aiSettings"], queryFn: () => getFn() });
+
+  const [provider, setProvider] = useState<"lovable" | "openai" | "gemini" | "custom">("lovable");
+  const [model, setModel] = useState("google/gemini-2.5-flash");
+  const [baseUrl, setBaseUrl] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<{ ok: boolean; msg: string } | null>(null);
+
+  useEffect(() => {
+    if (settings.data) {
+      setProvider(settings.data.provider);
+      setModel(settings.data.model);
+      setBaseUrl(settings.data.base_url ?? "");
+    }
+  }, [settings.data]);
+
+  async function save() {
+    setSaving(true);
+    try {
+      await saveFn({ data: { provider, model, base_url: baseUrl || null } });
+      toast.success("تم حفظ الإعدادات");
+      qc.invalidateQueries({ queryKey: ["aiSettings"] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "فشل الحفظ");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function test() {
+    setTesting(true);
+    setTestResult(null);
+    try {
+      const res = await testFn();
+      if (res.ok) {
+        setTestResult({ ok: true, msg: `✓ ${res.provider} · ${res.modelId} → ${res.reply}` });
+        toast.success("الاتصال يعمل بنجاح");
+      } else {
+        setTestResult({ ok: false, msg: res.error ?? "فشل" });
+        toast.error("فشل الاتصال");
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "خطأ";
+      setTestResult({ ok: false, msg });
+      toast.error(msg);
+    } finally {
+      setTesting(false);
+    }
+  }
+
+  if (settings.isLoading) {
+    return <div className="grid place-items-center py-12"><Loader2 className="size-6 animate-spin text-primary" /></div>;
+  }
+
+  const presets = MODEL_PRESETS[provider];
+  const keyPresent = settings.data?.key_present;
+  const needsKey = provider !== "lovable";
+
+  return (
+    <Card className="p-6 space-y-6 max-w-3xl">
+      <div className="flex items-start gap-3">
+        <div className="size-10 rounded-2xl bg-primary/10 grid place-items-center shrink-0">
+          <Sparkles className="size-5 text-primary" />
+        </div>
+        <div>
+          <h2 className="text-xl font-bold">إعدادات الذكاء الاصطناعي</h2>
+          <p className="text-sm text-muted-foreground">اختر مزوّد الـ AI والنموذج المستخدم في توليد القصص والمعلومات.</p>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label className="font-bold">المزوّد</Label>
+        <Select value={provider} onValueChange={(v) => {
+          const p = v as typeof provider;
+          setProvider(p);
+          const first = MODEL_PRESETS[p].models[0];
+          if (first) setModel(first.id);
+        }}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent>
+            {Object.entries(MODEL_PRESETS).map(([k, v]) => (
+              <SelectItem key={k} value={k}>{v.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label className="font-bold">النموذج</Label>
+        {presets.models.length > 0 ? (
+          <Select value={model} onValueChange={setModel}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {presets.models.map((m) => (
+                <SelectItem key={m.id} value={m.id}>{m.name} <span className="text-xs text-muted-foreground" dir="ltr">({m.id})</span></SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <Input value={model} onChange={(e) => setModel(e.target.value)} placeholder="model-id" dir="ltr" />
+        )}
+      </div>
+
+      {provider === "custom" && (
+        <div className="space-y-2">
+          <Label className="font-bold">رابط الـ API الأساسي (OpenAI-compatible)</Label>
+          <Input
+            value={baseUrl}
+            onChange={(e) => setBaseUrl(e.target.value)}
+            placeholder="https://api.example.com/v1"
+            dir="ltr"
+          />
+        </div>
+      )}
+
+      {needsKey && (
+        <div className={`p-4 rounded-2xl border-2 ${keyPresent ? "bg-primary/5 border-primary/30" : "bg-destructive/5 border-destructive/30"}`}>
+          <div className="flex items-start gap-3">
+            <KeyRound className={`size-5 mt-0.5 ${keyPresent ? "text-primary" : "text-destructive"}`} />
+            <div className="flex-1">
+              <p className="font-bold mb-1">
+                {keyPresent ? "✓ المفتاح مُعرَّف (CUSTOM_AI_API_KEY)" : "⚠️ المفتاح غير مُعرَّف"}
+              </p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                المفتاح يُخزَّن بشكل آمن في الباك إند باسم <code className="text-xs bg-muted px-1 rounded">CUSTOM_AI_API_KEY</code>.
+                {!keyPresent && " اطلب من مدير المشروع إضافته من إعدادات الأسرار."}
+                {" "}لتحديثه لاحقاً يكفي تعديل قيمة نفس السر.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="flex flex-wrap gap-2">
+        <Button onClick={save} disabled={saving} className="flex-1 min-w-[140px]">
+          {saving ? <Loader2 className="size-4 animate-spin ml-2" /> : null}
+          حفظ الإعدادات
+        </Button>
+        <Button onClick={test} disabled={testing} variant="outline">
+          {testing ? <Loader2 className="size-4 animate-spin ml-2" /> : null}
+          اختبار الاتصال
+        </Button>
+      </div>
+
+      {testResult && (
+        <div className={`p-3 rounded-xl text-sm flex items-start gap-2 ${testResult.ok ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"}`}>
+          {testResult.ok ? <CheckCircle2 className="size-4 mt-0.5 shrink-0" /> : <XCircle className="size-4 mt-0.5 shrink-0" />}
+          <span dir="ltr" className="break-all">{testResult.msg}</span>
+        </div>
+      )}
     </Card>
   );
 }

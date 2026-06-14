@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { createLovableAiGatewayProvider } from "@/lib/ai-gateway";
+import { resolveAiProvider } from "@/lib/ai-provider.server";
 import { generateText, Output } from "ai";
 import { z } from "zod";
 
@@ -37,11 +37,8 @@ export const generateStory = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => InputSchema.parse(data))
   .handler(async ({ data, context }) => {
-    const apiKey = process.env.LOVABLE_API_KEY;
-    if (!apiKey) throw new Error("LOVABLE_API_KEY missing");
-
-    const gateway = createLovableAiGatewayProvider(apiKey);
-    const model = gateway("google/gemini-2.5-flash");
+    const { model, lovableKey } = await resolveAiProvider();
+    const apiKey = lovableKey;
 
     const langName = data.language === "ar" ? "Arabic" : "English";
 

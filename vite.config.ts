@@ -12,4 +12,8 @@ export default defineConfig({
   tanstackStart: {
     server: { entry: "server" },
   },
+  vite: {
+    // GitHub Pages needs base = "/AI-story/" when deployed via Actions
+    base: process.env.GITHUB_PAGES === "true" ? "/AI-story/" : "/",
+  },
 });
